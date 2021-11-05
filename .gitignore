@@ -1,0 +1,6 @@
+.env
+Samples/*
+venv
+*.mp4
+.idea
+__pycache__
