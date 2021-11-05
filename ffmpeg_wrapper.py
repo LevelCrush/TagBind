@@ -27,7 +27,7 @@ class FFmpeg:
         base_video = f"video{self.last_video}"
         self.last_video += 1
         output_video = f"video{self.last_video}"
-        filter = "[{input}]drawtext=fontfile=./font.ttf:text='{text}':fontcolor=white:box=1:boxcolor=DarkCyan@0.75:boxborderw=5:x=if(lt(w-((t-{start})*10)\,w-text_w-200)\,w-((t-{start})*10)\,w-text_w-200):y=h-text_h-100:enable='between(t,{start},{end})'[{output}];".format(text=text,input=base_video,output=output_video,start=self.total_dration + delay,end=self.total_dration + delay+ duration)
+        filter = "[{input}]drawtext=fontfile=./font.ttf:text='{text}':fontcolor=white:box=1:boxcolor=DarkCyan@0.75:boxborderw=5:x=if(gt(t\,{end})\,w-text_w-150+((t-{end}) * 250)\,if(gt(w-((t-{start})*175)\,w-text_w-150)\,w-((t-{start})*175)\,w-text_w-150)):y=h-text_h-250:enable='between(t,{start},{end} + 3)'[{output}];".format(text=text,input=base_video,output=output_video,start=self.total_dration + delay,end=self.total_dration + delay+ duration)
         self.filters.append(filter)
 
     def addClip(self, video_path):
@@ -45,10 +45,11 @@ class FFmpeg:
         self.input_count += 1
 
     def run(self):
-        input_arg = ' -i ' + ' -i '.join(map(lambda x: '"{file}"'.format(file = x), self.inputs))
+        input_arg = ' -i ' + ' -i '.join(map(lambda x: f'"{x}"', self.inputs))
         filter_arg = "".join(self.filters)
+        audio_concat = "".join(map(lambda x: f'[{x}:a]', range(0,self.input_count))) + f"concat=n={self.input_count}:v=0:a=1"
         print(self.filters)
-        cmd = "ffmpeg -y {inputs} -filter_complex \"{filter}[video{output_video}]framerate={target_framerate}\" out.mp4".format(inputs=input_arg,filter=filter_arg,output_video=self.last_video,target_framerate=30)
+        cmd = "ffmpeg -y {inputs} -filter_complex \"{filter}[video{output_video}]framerate={target_framerate};{audio}\" out.mp4".format(inputs=input_arg,filter=filter_arg,output_video=self.last_video,target_framerate=30,audio=audio_concat)
         print(cmd)
         os.system(cmd)
 
