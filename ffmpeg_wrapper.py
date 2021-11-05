@@ -27,7 +27,7 @@ class FFmpeg:
         base_video = f"video{self.last_video}"
         self.last_video += 1
         output_video = f"video{self.last_video}"
-        filter = "[{input}]drawtext=fontfile=./font.ttf:text='{text}':fontcolor=white:box=1:boxcolor=DarkCyan@0.75:boxborderw=5:x=w-text_w-200:y=h-text_h-100:enable='between(t,{start},{end})'[{output}];".format(text=text,input=base_video,output=output_video,start=self.total_dration + delay,end=self.total_dration + delay+ duration)
+        filter = "[{input}]drawtext=fontfile=./font.ttf:text='{text}':fontcolor=white:box=1:boxcolor=DarkCyan@0.75:boxborderw=5:x=if(lt(w-((t-{start})*10)\,w-text_w-200)\,w-((t-{start})*10)\,w-text_w-200):y=h-text_h-100:enable='between(t,{start},{end})'[{output}];".format(text=text,input=base_video,output=output_video,start=self.total_dration + delay,end=self.total_dration + delay+ duration)
         self.filters.append(filter)
 
     def addClip(self, video_path):
