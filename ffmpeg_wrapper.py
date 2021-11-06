@@ -1,7 +1,4 @@
 
-# ffmpeg -i old.mp4 -i new.mp4 -filter_complex "[0:v][0:a] [0:v][0:a] [0:v][0:a] [1]format=yuva444p,geq=lum='p(X,Y)':a='st(1,(1+W/H/TN)*H/D);if(lt(W-X,((ld(1)*T-Y)/(ld(1)*T))*ld(1)*T*TN),p(X,Y),0)':enable='lte(t,D)',setpts=PTS+D/TB[new];[0:v][new]overlay" wipe.mp4
-# ffmpeg -i "./Samples\Destiny 2 2021.10.23 - 16.54.12.02.DVR_Trim.mp4" -i "./Samples\Rocket League 2021.11.03 - 16.24.55.07.DVR_Trim_Trim.mp4" -i "./Samples\Valorant 2021.06.10 - 16.54.02.07.DVR_Trim.mp4" -filter_complex "[1]format=yuva444p,geq=lum='p(X,Y)':a='st(1,(1+W/H/TN)*H/D);if(lt(W-X,((ld(1)*T-Y)/(ld(1)*T))*ld(1)*T*TN),p(X,Y),0)':enable='lte(t,D)',setpts=PTS+D/TB[video0];[0:v][video0]overlay" wipe.mp4
-
 import os
 from subprocess import  check_output, CalledProcessError, STDOUT
 
@@ -13,6 +10,11 @@ class FFmpeg:
         self.last_video = -1
         self.transition_duration = 1
         self.total_dration = 0
+        self.width = 1920
+        self.height = 1080
+    def setResolution(self, width, height):
+        self.width = width
+        self.height = height
 
     def addWipe(self, video_index, transition_angle = 1):
         base_video = f"video{self.last_video}"
@@ -20,7 +22,7 @@ class FFmpeg:
         intermediate_video = f"video{self.last_video}"
         self.last_video += 1
         output_video = f"video{self.last_video}"
-        filter = "[{index}]scale=1920:1080[input{index}];[input{index}]format=yuva444p,geq=lum='p(X,Y)':a='st(1,(1+W/H/{angle})*H/{duration});if(lt(W-X,((ld(1)*T-Y)/(ld(1)*T))*ld(1)*T*{angle}),p(X,Y),0)':enable='lte(t,{duration})',setpts=PTS+{duration}+{offset}/TB[{intermediate}];[{base_video}][{intermediate}]overlay[{output}];".format(index=video_index,duration=self.transition_duration,angle=transition_angle,offset=self.total_dration,base_video=base_video,output=output_video, intermediate=intermediate_video)
+        filter = "[{index}]scale={width}:{height}[input{index}];[input{index}]format=yuva444p,geq=lum='p(X,Y)':a='st(1,(1+W/H/{angle})*H/{duration});if(lt(W-X,((ld(1)*T-Y)/(ld(1)*T))*ld(1)*T*{angle}),p(X,Y),0)':enable='lte(t,{duration})',setpts=PTS+{duration}+{offset}/TB[{intermediate}];[{base_video}][{intermediate}]overlay[{output}];".format(index=video_index,duration=self.transition_duration,angle=transition_angle,offset=self.total_dration,base_video=base_video,output=output_video, intermediate=intermediate_video,width=self.width,height=self.height)
         self.filters.append(filter)
 
     def addText(self, text, duration = 3, delay = 1, in_speed = 300, out_speed = 500):
@@ -37,7 +39,7 @@ class FFmpeg:
         else:
             self.last_video += 1
             output_video = f"video{self.last_video}"
-            filter = "[{input}]scale=1920:1080[{out}];".format(out=output_video,input=self.input_count)
+            filter = "[{input}]scale={width}:{height}[{out}];".format(out=output_video,input=self.input_count,width=self.width,height=self.height)
             self.filters.append(filter)
         self.addText(self.input_count)
         self.total_dration += getDuration(video_path)
