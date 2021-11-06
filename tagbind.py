@@ -81,21 +81,19 @@ print("New Clips Found: {new_count}\tUsing: {using_count}".format(new_count=len(
 
 # prepare our video encoder
 video_encoder = VideoEncoder()
+video_encoder.setFPS(60)
+video_encoder.setResolution(1280,720)
+
 for file in new_files[:target_tag_count]:
 	print("Using\t: {tag}".format(tag = file))
-	video_encoder.input(file,0,0)
-
+	video_encoder.addClip(file,"Banner Text")
 
 # append our outro 
-video_encoder.input(OUTRO_YOUTUBE,0,0)
+video_encoder.addClip(OUTRO_YOUTUBE)
 
 
-# apply encoder filters
-video_encoder.concat('outv','outa')
-video_encoder.scale(1280,720,'outv','outv2')
-video_encoder.framerate(60,'outv2','outv3')
-video_encoder.output('outv3','outa',output_file)
-video_encoder.run()
+# create video
+video_encoder.create(output_file)
 
 
 # ask if the video output was saved. ATM this doesnt do anything either

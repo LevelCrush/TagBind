@@ -1,80 +1,115 @@
-import sys
 import os
-import os.path
-from pprint import pprint
-
+from subprocess import  check_output, CalledProcessError, STDOUT
 
 
 class VideoEncoder:
 
-	# construct our encoder instance
-	def __init__(self):
-		self.inputs = []
-		self.streams = []
-		self.input_index = 0
-		self.complex_filters = []
-		self.encoder_settings = {
-			'codec' : 'libx264',
-			'preset' : 'veryfast',
-			'params' : 'nal-hrd-cbr',
-			'b-frames' : 2,
-			'bitrate-video-avg' : '10M',
-			'bitrate-video-min' : '10M',
-			'bitrate-video-max' : '10M',
-			'bitrate-video-buffer' : '20M',
-			'profile-video' : 'high',
-			'level-video' : '4.2'
-		}
-		self.output_segment = ''
+    def __init__(self):
+        self.inputs = []
+        self.filters = []
+        self.input_count = 0
+        self.last_video = -1
+        self.transition_duration = 1
+        self.total_duration = 0
+        self.width = 1920
+        self.height = 1080
+        self.fps = 30
+        self.enable_banners = True
 
+    def setResolution(self, width, height):
+        self.width = width
+        self.height = height
 
-	# add an input into our ffmpeg command
-	def input(self, input_file, video_track, audio_track):
-		self.inputs.append("\"{file}\"".format(file=input_file))
-		self.streams.append("[{index}:v][{index}:a]".format(index = self.input_index, video_track = video_track, audio_track = audio_track))
-		self.input_index += 1
+    def setFPS(self, fps):
+        self.fps = fps
 
+    def setBannersEnabled(self, enabled):
+        self.enable_banners = enabled
 
-	# concat inputs together
-	def concat(self, video_label, audio_label):
-		complex_filter = "concat=n={total_clips}:v=1:a=1 [{video_label}] [{audio_label}]".format(total_clips = len(self.inputs), video_label = video_label, audio_label = audio_label)
-		self.complex_filters.append(complex_filter)
-
-	# adds the scale filter to  our output
-	def scale(self, width, height,input_video_label, output_video_label):
-		complex_filter = "[{input_video_label}]scale={width}:{height}[{output_video_label}]".format(width = width, height = height, output_video_label = output_video_label, input_video_label = input_video_label)
-		self.complex_filters.append(complex_filter)
-
-	# adds the framerate filter to our output
-	def framerate(self, target_framerate, input_video_label, output_video_label):
-		complex_filter = "[{input_video_label}]framerate={target_framerate}[{output_video_label}]".format(input_video_label = input_video_label, target_framerate = target_framerate, output_video_label = output_video_label)
-		self.complex_filters.append(complex_filter)
-
-	# adjust an encoder setting
-	def encoder_setting(self, setting, value):
-		self.encoder_settings[setting] = value
-
-
-	def output(self, output_video,output_audio,output_file):
-		encoder_string = "-c:v {codec} -preset {preset} -x264-params \"{params}\" -bf {bframes} -b:v {bitrate_avg} -minrate {bitrate_min} -maxrate {bitrate_max} -bufsize {bitrate_buff} -profile:v {profile} -level {level}".format(
-			codec = self.encoder_settings['codec'],
-			preset = self.encoder_settings['preset'],
-			params = self.encoder_settings['params'],
-			bframes = self.encoder_settings['b-frames'],
-			bitrate_avg = self.encoder_settings['bitrate-video-avg'],
-			bitrate_min = self.encoder_settings['bitrate-video-min'],
-			bitrate_max = self.encoder_settings['bitrate-video-max'],
-			bitrate_buff = self.encoder_settings['bitrate-video-buffer'],
-			profile = self.encoder_settings['profile-video'],
-			level = self.encoder_settings['level-video']
+    def addWipe(self, video_index, transition_angle=1):
+        base_video = f"video{self.last_video}"
+        self.last_video += 1
+        intermediate_video = f"video{self.last_video}"
+        self.last_video += 1
+        output_video = f"video{self.last_video}"
+        filter = "[{index}]scale={width}:{height}[input{index}];[input{index}]format=yuva444p,geq=lum='p(X,Y)':a='st(1,(1+W/H/{angle})*H/{duration});if(lt(W-X,((ld(1)*T-Y)/(ld(1)*T))*ld(1)*T*{angle}),p(X,Y),0)':enable='lte(t,{duration})',setpts=PTS+{duration}+{offset}/TB[{intermediate}];[{base_video}][{intermediate}]overlay[{output}];".format(
+            index=video_index,
+			duration=self.transition_duration,
+			angle=transition_angle,
+			offset=self.total_duration,
+            base_video=base_video,
+			output=output_video,
+			intermediate=intermediate_video,
+			width=self.width,
+            height=self.height
 		)
+        self.filters.append(filter)
 
-		self.output_segment = "-map \"[{output_video}]\" -map \"[{output_audio}]\" {encoder_settings}  \"{output_file}\"".format(output_video = output_video, output_audio = output_audio, encoder_settings = encoder_string, output_file = output_file)
+    def addText(self, text, duration=3, delay=1, in_speed=300, out_speed=500):
+        base_video = f"video{self.last_video}"
+        self.last_video += 1
+        output_video = f"video{self.last_video}"
+        filter = "[{input}]drawtext=fontsize=(h/16):fontfile=./font.ttf:text=\'{text}\':fontcolor=white:box=1:boxcolor=DarkCyan:boxborderw=20:x=if(gt(t\,{end})\,w-text_w-150+((t-{end}) * {ospeed})\,if(gt(w-((t-{start})*{ispeed})\,w-text_w-150)\,w-((t-{start})*{ispeed})\,w-text_w-150)):y=h-text_h-150:enable='between(t,{start},{end} + 3)'[{output}];".format(
+            text=text,
+			input=base_video,
+			output=output_video,
+			start=self.total_duration + delay,
+            end=self.total_duration + delay + duration,
+			ispeed=in_speed,
+			ospeed=out_speed
+		)
+        self.filters.append(filter)
 
-	def run(self):
+    def addClip(self, video_path, banner=""):
+        self.inputs.append(video_path)
+        if self.input_count != 0:
+            self.addWipe(self.input_count)
+        else:
+            self.last_video += 1
+            output_video = f"video{self.last_video}"
+            filter = "[{input}]scale={width}:{height}[{out}];".format(
+				out=output_video,
+				input=self.input_count,
+				width=self.width,
+				height=self.height
+			)
+            self.filters.append(filter)
+        if banner != "" and self.enable_banners:
+            self.addText(banner)
+        self.total_duration += getDuration(video_path)
+        self.input_count += 1
 
-		ffmpeg_inputs = ' -i '.join(self.inputs)
-		ffmpeg_streams = ' '.join(self.streams) 
-		filter_graphs = '; '.join(self.complex_filters)
-		ffmpeg_command = "ffmpeg -i {inputs} -filter_complex \"{audio_video_streams} {filter_graphs}\" {output_string}".format(inputs = ffmpeg_inputs, audio_video_streams = ffmpeg_streams, filter_graphs = filter_graphs, output_string = self.output_segment)
-		os.system(ffmpeg_command)
+    def create(self, output_path="./out.mp4"):
+        input_arg = ' -i ' + ' -i '.join(map(lambda x: f'"{x}"', self.inputs))
+        filter_arg = "".join(self.filters)
+        audio_concat = "".join(map(lambda x: f'[{x}:a]', range(0, self.input_count))) + f"concat=n={self.input_count}:v=0:a=1"
+        cmd = "ffmpeg -y {inputs} -filter_complex \"{filter}[video{output_video}]framerate={target_framerate};{audio}\" {output}".format(
+            inputs=input_arg,
+			filter=filter_arg,
+			output_video=self.last_video,
+			target_framerate=self.fps,
+            audio=audio_concat,
+			output=output_path
+		)
+        print(cmd)
+        os.system(cmd)
+
+
+def getDuration(filename):
+    command = [
+        'ffprobe',
+        '-v',
+        'error',
+        '-show_entries',
+        'format=duration',
+        '-of',
+        'default=noprint_wrappers=1:nokey=1',
+        filename
+    ]
+
+    try:
+        output = check_output(command, stderr=STDOUT).decode()
+    except CalledProcessError as e:
+        output = e.output.decode()
+
+    return float(output)
