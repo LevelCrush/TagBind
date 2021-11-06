@@ -19,7 +19,7 @@ class FFmpeg:
         self.width = width
         self.height = height
 
-    def setResolution(self, fps):
+    def setFPS(self, fps):
         self.fps = fps
 
     def setBannersEnabled(self, enabled):
