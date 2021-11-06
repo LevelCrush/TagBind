@@ -12,9 +12,18 @@ class FFmpeg:
         self.total_dration = 0
         self.width = 1920
         self.height = 1080
+        self.fps = 30
+        self.enable_banners = True
+
     def setResolution(self, width, height):
         self.width = width
         self.height = height
+
+    def setResolution(self, fps):
+        self.fps = fps
+
+    def setBannersEnabled(self, enabled):
+        self.enable_banners = enabled
 
     def addWipe(self, video_index, transition_angle = 1):
         base_video = f"video{self.last_video}"
@@ -29,10 +38,10 @@ class FFmpeg:
         base_video = f"video{self.last_video}"
         self.last_video += 1
         output_video = f"video{self.last_video}"
-        filter = "[{input}]drawtext=fontsize=(h/16):fontfile=./font.ttf:text=\'Video Clip {text}\':fontcolor=white:box=1:boxcolor=DarkCyan:boxborderw=20:x=if(gt(t\,{end})\,w-text_w-150+((t-{end}) * {ospeed})\,if(gt(w-((t-{start})*{ispeed})\,w-text_w-150)\,w-((t-{start})*{ispeed})\,w-text_w-150)):y=h-text_h-150:enable='between(t,{start},{end} + 3)'[{output}];".format(text=text,input=base_video,output=output_video,start=self.total_dration + delay,end=self.total_dration + delay+ duration,ispeed=in_speed,ospeed=out_speed)
+        filter = "[{input}]drawtext=fontsize=(h/16):fontfile=./font.ttf:text=\'{text}\':fontcolor=white:box=1:boxcolor=DarkCyan:boxborderw=20:x=if(gt(t\,{end})\,w-text_w-150+((t-{end}) * {ospeed})\,if(gt(w-((t-{start})*{ispeed})\,w-text_w-150)\,w-((t-{start})*{ispeed})\,w-text_w-150)):y=h-text_h-150:enable='between(t,{start},{end} + 3)'[{output}];".format(text=text,input=base_video,output=output_video,start=self.total_dration + delay,end=self.total_dration + delay+ duration,ispeed=in_speed,ospeed=out_speed)
         self.filters.append(filter)
 
-    def addClip(self, video_path):
+    def addClip(self, video_path, banner = ""):
         self.inputs.append(video_path)
         if self.input_count != 0:
             self.addWipe(self.input_count)
@@ -41,15 +50,16 @@ class FFmpeg:
             output_video = f"video{self.last_video}"
             filter = "[{input}]scale={width}:{height}[{out}];".format(out=output_video,input=self.input_count,width=self.width,height=self.height)
             self.filters.append(filter)
-        self.addText(self.input_count)
+        if banner != "" and self.enable_banners:
+            self.addText(banner)
         self.total_dration += getDuration(video_path)
         self.input_count += 1
 
-    def run(self):
+    def create(self, output_path = "./out.mp4"):
         input_arg = ' -i ' + ' -i '.join(map(lambda x: f'"{x}"', self.inputs))
         filter_arg = "".join(self.filters)
         audio_concat = "".join(map(lambda x: f'[{x}:a]', range(0,self.input_count))) + f"concat=n={self.input_count}:v=0:a=1"
-        cmd = "ffmpeg -y {inputs} -filter_complex \"{filter}[video{output_video}]framerate={target_framerate};{audio}\" out.mp4".format(inputs=input_arg,filter=filter_arg,output_video=self.last_video,target_framerate=30,audio=audio_concat)
+        cmd = "ffmpeg -y {inputs} -filter_complex \"{filter}[video{output_video}]framerate={target_framerate};{audio}\" {output}".format(inputs=input_arg,filter=filter_arg,output_video=self.last_video,target_framerate=self.fps,audio=audio_concat,output=output_path)
         print(cmd)
         os.system(cmd)
 
