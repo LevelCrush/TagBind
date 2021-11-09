@@ -83,7 +83,7 @@ class VideoEncoder:
         input_arg = ' -i ' + ' -i '.join(map(lambda x: f'"{x}"', self.inputs))
         filter_arg = "".join(self.filters)
         audio_concat = "".join(map(lambda x: f'[{x}:a]', range(0, self.input_count))) + f"concat=n={self.input_count}:v=0:a=1"
-        cmd = "ffmpeg -y {inputs} -filter_complex \"{filter}[video{output_video}]framerate={target_framerate};{audio}\" {output}".format(
+        cmd = os.getcwd() + "\\ffmpeg\\ffmpeg -y {inputs} -filter_complex \"{filter}[video{output_video}]framerate={target_framerate};{audio}\" {output}".format(
             inputs=input_arg,
 			filter=filter_arg,
 			output_video=self.last_video,
@@ -97,7 +97,7 @@ class VideoEncoder:
 
 def getDuration(filename):
     command = [
-        'ffprobe',
+        os.getcwd() + '\\ffmpeg\\ffprobe',
         '-v',
         'error',
         '-show_entries',
