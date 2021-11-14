@@ -4,7 +4,7 @@ from subprocess import  check_output, CalledProcessError, STDOUT
 
 class VideoEncoder:
 
-    def __init__(self, width = 1920, height = 1080, frame_rate = 30, banners = True):
+    def __init__(self, width = 1920, height = 1080, frame_rate = 30, banners = True, mute_clips = False):
         self._inputs = []
         self._filters = []
         self._input_count = 0
