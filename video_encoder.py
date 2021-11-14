@@ -119,7 +119,7 @@ class VideoEncoder:
             audio_args += f";{''.join(audio_sources)}amix=inputs={len(audio_sources)}[audio_out]"
             join_args += " -map [audio_out]:a"
 
-        cmd = os.getcwd() + "\\ffmpeg\\ffmpeg -y {inputs} -filter_complex \"{filter}[video{output_video}]framerate={target_framerate}[video_out]{audio}\" {join} -t {length} {output}".format(
+        cmd = "\"{cwd}\\ffmpeg\\ffmpeg\" -y {inputs} -filter_complex \"{filter}[video{output_video}]framerate={target_framerate}[video_out]{audio}\" {join} -t {length} {output}".format(
             inputs=input_arg,
             filter=filter_arg,
             output_video=self._last_video,
@@ -127,19 +127,18 @@ class VideoEncoder:
             audio=audio_args,
             output=output_path,
             join=join_args,
-            length=self._total_duration
+            length=self._total_duration,
+            cwd=os.getcwd()
         )
 
-        print(cmd)
+        print("Creating Video...")
         try:
-            res = check_output([cmd], stderr=STDOUT).decode()
-            print(res)
+            ffmpeg_output = check_output(cmd, stderr=STDOUT).decode()
         except CalledProcessError as e:
-            res = e.output.decode()
-            print(res)
-            print("FFError")
+            print(f"FFmpeg Error: {e.output.decode()}")
+            print("Creation Failed!")
+            return False
 
-        #os.system(cmd)
         print("Checking output video")
         output_length = self._get_clip_duration(output_path)
         if abs(self._total_duration - output_length) < 0.5:
@@ -161,7 +160,7 @@ class VideoEncoder:
     @staticmethod
     def _get_clip_duration(filename):
         command = [
-            os.getcwd() + 'ffprobe',
+            os.getcwd() + '\\ffmpeg\\ffprobe',
             '-v',
             'error',
             '-show_entries',
