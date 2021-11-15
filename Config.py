@@ -27,14 +27,9 @@ class Configuration:
 
         command_line_arguments = parser.parse_args()
         # parse command line arguments (old code)
-        video_directory = command_line_arguments.input_directory
-        output_file = command_line_arguments.output_file
-        recurse_directory = command_line_arguments.recurse
-        target_tag_count = int(command_line_arguments.count)
-        target_platform = command_line_arguments.platform
-        shuffle_videos = command_line_arguments.shuffle
+        
         self.preset_configs = 'configurations.json'
-        print(target_platform)
+
         self.width = int(command_line_arguments.width)
         self.height = int(command_line_arguments.height)
         self.fps = int(command_line_arguments.fps)
@@ -44,8 +39,9 @@ class Configuration:
         self.recurse = command_line_arguments.recurse
         self.shuffle = command_line_arguments.shuffle
         self.repeat = command_line_arguments.allow_repeat
-        if target_platform != 'none':
-            self.pull_from_configs(target_platform)
+        self.platform = command_line_arguments.platform
+        if self.platform != 'none':
+            self.pull_from_configs(self.platform)
 
         # default paramss
 
