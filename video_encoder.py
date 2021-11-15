@@ -41,16 +41,6 @@ class VideoEncoder:
             intermediate=intermediate_video,
             width=self.width,
             height=self.height
-<<<<<<< HEAD
-		)
-        self.filters.append(filter)
-
-    def addText(self, text, duration=3, delay=1, in_speed=30, out_speed=50):
-        base_video = f"video{self.last_video}"
-        self.last_video += 1
-        output_video = f"video{self.last_video}"
-        filter = "[{input}]drawtext=fontsize=(h/16):fontfile=./font.ttf:text=\'{text}\':fontcolor=white:box=1:boxcolor=DarkCyan:boxborderw=20:x=if(gt(t\,{end})\,w-text_w-150+((t-{end}) * {ospeed})\,if(gt(w-((t-{start})*{ispeed})\,w-text_w-150)\,w-((t-{start})*{ispeed})\,w-text_w-150)):y=h-text_h-150:enable='between(t,{start},{end} + 3)'[{output}];".format(
-=======
         )
         self._filters.append(wipe_filter)
 
@@ -60,7 +50,6 @@ class VideoEncoder:
         self._last_video += 1
         output_video = f"video{self._last_video}"
         text_filter = "[{input}]drawtext=fontsize=(h/16):fontfile=./font.ttf:text=\'{text}\':fontcolor=white:box=1:boxcolor=DarkCyan:boxborderw=20:x=if(gt(t\,{end})\,w-text_w-150+((t-{end}) * {ospeed})\,if(gt(w-((t-{start})*{ispeed})\,w-text_w-150)\,w-((t-{start})*{ispeed})\,w-text_w-150)):y=h-text_h-150:enable='between(t,{start},{end} + 3)'[{output}];".format(
->>>>>>> 86750bad5a781896b3f17008b62ad1b309805b2b
             text=text,
             input=base_video,
             output=output_video,
