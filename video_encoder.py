@@ -45,7 +45,7 @@ class VideoEncoder:
 		)
         self.filters.append(filter)
 
-    def addText(self, text, duration=3, delay=1, in_speed=300, out_speed=500):
+    def addText(self, text, duration=3, delay=1, in_speed=30, out_speed=50):
         base_video = f"video{self.last_video}"
         self.last_video += 1
         output_video = f"video{self.last_video}"

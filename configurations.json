@@ -1,0 +1,23 @@
+{
+  "presets": [
+    {
+      "name": "youtube",
+      "width": 920,
+      "height": 1080,
+       "fps": 5
+
+
+
+    },
+     {
+      "name": "tictoc",
+      "width": 720,
+      "height": 1280,
+      "fps": 60
+
+       
+
+    }
+
+  ]
+}
