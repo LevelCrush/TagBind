@@ -4,7 +4,7 @@ from subprocess import  check_output, CalledProcessError, STDOUT
 
 class VideoEncoder:
 
-    def __init__(self, width = 1920, height = 1080, frame_rate = 30, banners = True, mute_clips = False):
+    def __init__(self, width=1920, height=1080, frame_rate=30, banners=True, mute_clips=False, music_volume=0.35, transition_duration=1, vcodec="libx264", acodec="aac"):
         self._inputs = []
         self._filters = []
         self._input_count = 0
@@ -19,10 +19,10 @@ class VideoEncoder:
         self.fps = frame_rate
         self.enable_banners = banners
         self.mute_clips = mute_clips
-        self.music_volume = 0.35
-        self.transition_duration = 1
-        self.vcodec = "libx264"
-        self.acodec = "aac"
+        self.music_volume = music_volume
+        self.transition_duration = transition_duration
+        self.vcodec = vcodec
+        self.acodec = acodec
 
     def _add_wipe(self, video_index, transition_angle=1):
         # Must add a clip before calling this or it will fail
