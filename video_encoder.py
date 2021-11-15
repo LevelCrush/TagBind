@@ -21,6 +21,8 @@ class VideoEncoder:
         self.mute_clips = mute_clips
         self.music_volume = 0.35
         self.transition_duration = 1
+        self.vcodec = "libx264"
+        self.acodec = "aac"
 
     def _add_wipe(self, video_index, transition_angle=1):
         # Must add a clip before calling this or it will fail
@@ -119,7 +121,7 @@ class VideoEncoder:
             audio_args += f";{''.join(audio_sources)}amix=inputs={len(audio_sources)}[audio_out]"
             join_args += " -map [audio_out]:a"
 
-        cmd = "\"{cwd}\\ffmpeg\\ffmpeg\" -y {inputs} -filter_complex \"{filter}[video{output_video}]framerate={target_framerate}[video_out]{audio}\" {join} -t {length} {output}".format(
+        cmd = "\"{cwd}\\ffmpeg\\ffmpeg\" -y {inputs} -filter_complex \"{filter}[video{output_video}]framerate={target_framerate}[video_out]{audio}\" {join} -t {length} -vcodec {vcodec} -acodec {acodec} {output}".format(
             inputs=input_arg,
             filter=filter_arg,
             output_video=self._last_video,
@@ -128,7 +130,9 @@ class VideoEncoder:
             output=output_path,
             join=join_args,
             length=self._total_duration,
-            cwd=os.getcwd()
+            cwd=os.getcwd(),
+            vcodec=self.vcodec,
+            acodec=self.acodec
         )
 
         print("Creating Video...")

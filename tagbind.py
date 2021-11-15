@@ -88,8 +88,8 @@ for file in new_files[:target_tag_count]:
 
 # append our outro 
 video_encoder.add_outro(OUTRO_YOUTUBE)
-video_encoder.add_music("./Samples/song1.mp3")
-video_encoder.add_music("./Samples/song2.mp3")
+#video_encoder.add_music("./Samples/song1.mp3")
+#video_encoder.add_music("./Samples/song2.mp3")
 
 # create video
 video_encoder.create(output_file)
