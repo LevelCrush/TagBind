@@ -67,17 +67,16 @@ if using_clips == 0:
 print("New Clips Found: {new_count}\tUsing: {using_count}".format(new_count=len(new_files),using_count = using_clips))
 
 # prepare our video encoder
-video_encoder = VideoEncoder()
-video_encoder.setFPS(configs.fps)
-video_encoder.setResolution(configs.width, configs.height)
+video_encoder = VideoEncoder(configs.width, configs.height, configs.fps, True, False)
 
 for file in new_files[:configs.clip_count]:
-	print("Using\t: {tag}".format(tag = file))
-	video_encoder.addClip(file,"Banner Text")
+	print("Using\t: {tag}".format(tag=file))
+	video_encoder.add_clip(file, "Banner Text")
 
 # append our outro 
-video_encoder.addClip(OUTRO_YOUTUBE)
-
+video_encoder.add_outro(OUTRO_YOUTUBE)
+#video_encoder.add_music("./Samples/song1.mp3")
+#video_encoder.add_music("./Samples/song2.mp3")
 
 # create video
 video_encoder.create(configs.output)
