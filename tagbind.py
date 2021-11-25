@@ -60,7 +60,7 @@ if using_clips == 0:
 print("New Clips Found: {new_count}\tUsing: {using_count}".format(new_count=len(new_files),using_count = using_clips))
 
 # prepare our video encoder
-video_encoder = VideoEncoder(configs.width, configs.height, configs.fps, True, False)
+video_encoder = VideoEncoder(configs.width, configs.height, configs.fps, configs.banners, configs.mute_clips,configs.volume,configs.transition_duration,configs.vcodec)
 
 for file in new_files[:configs.clip_count]:
 	print("Using\t: {tag}".format(tag=file))
