@@ -17,21 +17,14 @@ from Config import Configuration
 
 OUTRO_YOUTUBE = './outros/YouTube_Outro.mp4'
 
-
-
 configs = Configuration()
-
-
-
-
-
 
 #output our input and output information
 print("Input Directory\t:\t{input}\nOutput File\t:\t{output}".format(input=configs.input, output=configs.output))
 
 
 # initialize our database
-database_connection = VideoDatabase()
+database_connection = VideoDatabase(configs.input, configs.recurse)
 database_connection.connect()
 
 if configs.recurse:

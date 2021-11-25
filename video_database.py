@@ -1,10 +1,10 @@
 """
 manages the video database configuration
 """
-import json
-import pathlib
+
 import mysql.connector
 from mysql.connector import Error
+import glob
 
 SQL_HOST = 'videodatabase.json'
 SQL_USER = ""
@@ -13,12 +13,14 @@ SQL_PASSWORD = ""
 class VideoDatabase:
 
 	# constructor for the video database class, just initialize all variables
-	def __init__(self):
+	def __init__(self, input_dir, recursive=False):
 		self.connection = None
 		self.cursor = None
+		self.input_dir = input_dir
+		self.recursive = recursive
 
 	# connect to the "database" although ATM this is just connected to a JSON file
-	def connect(self, create_db = True):
+	def connect(self, create_db=True):
 		try:
 			self.connection = mysql.connector.connect(
 				host=SQL_HOST,
@@ -59,7 +61,14 @@ class VideoDatabase:
 			print(f"Failed to Create DB: '{e}'")
 			return False
 
-	# determine if we have already used a vidoe file
+	def scan_clips(self):
+		glob_search = "{input}/*.mp4".format(input=configs.input)
+		video_files = glob.glob(glob_search, recursive=configs.recurse)
+		if self.recursive:
+			print("Scanning recursively for clips")
+		else:
+			print("Scanning for clips")
+
 	def already_used(self, video_file):
 		return video_file in self.used_videos or video_file in self.created_videos
 
@@ -69,15 +78,3 @@ class VideoDatabase:
 		else:
 			self.created_videos.append(video_file)
 			return True
-
-	# save and close any connection
-	def close(self): 
-
-		# extend the videos 
-		self.database['videos'].extend(self.created_videos)
-
-		# save the database connections
-		database_path = pathlib.Path(VIDEO_DATABASE_FILE)
-		with database_path.open(mode='w') as database_pointer:
-			json.dump(self.database, database_pointer)
-		print("Saved database")
