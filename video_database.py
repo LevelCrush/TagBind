@@ -59,11 +59,14 @@ class VideoDatabase:
 			print("Scanning for clips")
 		video_files = glob.glob(f"{self.input_dir}/*.mp4", recursive=self.recursive)
 		for file in video_files:
-			print(file)
 			self.cursor.execute(f"SELECT * FROM [dbo].[clips] WHERE path = '{file}'")
 			res = self.cursor.fetchall()
 			if len(res) == 0:
 				print(f"New Clip Found: {file}")
+				print("Enter Clip Banner Text:")
+				banner = input("Enter your value: ")
+				self.cursor.execute(f"INSERT INTO [dbo].[clips] ([banner],[path],[used]) VALUES ('{banner}','{file}',0)")
+		self.cursor.commit()
 
 	def already_used(self, video_file):
 		return video_file in self.used_videos or video_file in self.created_videos
