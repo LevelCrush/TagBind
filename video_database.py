@@ -1,14 +1,14 @@
 """
 manages the video database configuration
 """
-
-import mysql.connector
-from mysql.connector import Error
+import pyodbc
+from pyodbc import Error
 import glob
+import os
 
-SQL_HOST = "localhost\TAGBIND"
-SQL_USER = ""
-SQL_PASSWORD = ""
+from dotenv import load_dotenv
+load_dotenv()
+SQL_CONNECTION = os.getenv('SQL_CONNECTION_STRING')
 
 class VideoDatabase:
 
@@ -22,12 +22,7 @@ class VideoDatabase:
 	# connect to the "database" although ATM this is just connected to a JSON file
 	def connect(self, create_db=True):
 		try:
-			self.connection = mysql.connector.connect(
-				host=SQL_HOST,
-				user=SQL_USER,
-				passwd=SQL_PASSWORD,
-				database="tagbind"
-			)
+			self.connection = pyodbc.connect(SQL_CONNECTION)
 			self.cursor = self.connection.cursor()
 			print("Connected to DB")
 			return True
@@ -41,11 +36,7 @@ class VideoDatabase:
 	def create_db(self):
 		connection = None
 		try:
-			connection = mysql.connector.connect(
-				host=SQL_HOST,
-				user=SQL_USER,
-				passwd=SQL_PASSWORD
-			)
+			connection = pyodbc.connect(SQL_CONNECTION)
 			print("Connected to SQL, Creating tagbind DB")
 		except Error as e:
 			print(f"Failed to connect to SQL: '{e}'")
@@ -69,8 +60,10 @@ class VideoDatabase:
 		video_files = glob.glob(f"{self.input_dir}/*.mp4", recursive=self.recursive)
 		for file in video_files:
 			print(file)
-			self.cursor.execute(f"USE [tagbind] GO SELECT [id],[banner],[path],[used] FROM [dbo].[clips] WHERE path = '{file}' GO")
-			print(self.cursor.fetchall())
+			self.cursor.execute(f"SELECT * FROM [dbo].[clips] WHERE path = '{file}'")
+			res = self.cursor.fetchall()
+			if len(res) == 0:
+				print(f"New Clip Found: {file}")
 
 	def already_used(self, video_file):
 		return video_file in self.used_videos or video_file in self.created_videos
