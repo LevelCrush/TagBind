@@ -6,7 +6,7 @@ import mysql.connector
 from mysql.connector import Error
 import glob
 
-SQL_HOST = 'videodatabase.json'
+SQL_HOST = "localhost\TAGBIND"
 SQL_USER = ""
 SQL_PASSWORD = ""
 
@@ -62,12 +62,15 @@ class VideoDatabase:
 			return False
 
 	def scan_clips(self):
-		glob_search = "{input}/*.mp4".format(input=configs.input)
-		video_files = glob.glob(glob_search, recursive=configs.recurse)
 		if self.recursive:
 			print("Scanning recursively for clips")
 		else:
 			print("Scanning for clips")
+		video_files = glob.glob(f"{self.input_dir}/*.mp4", recursive=self.recursive)
+		for file in video_files:
+			print(file)
+			self.cursor.execute(f"USE [tagbind] GO SELECT [id],[banner],[path],[used] FROM [dbo].[clips] WHERE path = '{file}' GO")
+			print(self.cursor.fetchall())
 
 	def already_used(self, video_file):
 		return video_file in self.used_videos or video_file in self.created_videos

@@ -26,6 +26,8 @@ print("Input Directory\t:\t{input}\nOutput File\t:\t{output}".format(input=confi
 # initialize our database
 database_connection = VideoDatabase(configs.input, configs.recurse)
 database_connection.connect()
+database_connection.scan_clips()
+SystemExit()
 
 if configs.recurse:
 	print("Scanning  directory recursively for video files")
@@ -33,7 +35,7 @@ else:
 	print("Scanning directory for video files")
 
 
-# scan for all files in our video directory 
+# scan for all files in our video directory
 glob_search = "{input}/*.mp4".format(input = configs.input)
 video_files = glob.glob(glob_search, recursive = configs.recurse)
 
