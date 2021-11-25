@@ -14,16 +14,17 @@ class VideoDatabase:
 
 	# constructor for the video database class, just initialize all variables
 	def __init__(self, input_dir, recursive=False):
-		self.connection = None
-		self.cursor = None
-		self.input_dir = input_dir
-		self.recursive = recursive
+		self._connection = None
+		self._cursor = None
+		self._input_dir = input_dir
+		self._recursive = recursive
+		self._current_montage = None
 
 	# connect to the "database" although ATM this is just connected to a JSON file
 	def connect(self, create_db=True):
 		try:
-			self.connection = pyodbc.connect(SQL_CONNECTION)
-			self.cursor = self.connection.cursor()
+			self._connection = pyodbc.connect(SQL_CONNECTION)
+			self._cursor = self._connection.cursor()
 			print("Connected to DB")
 			return True
 		except Error as e:
@@ -53,27 +54,28 @@ class VideoDatabase:
 			return False
 
 	def scan_clips(self):
-		if self.recursive:
+		if self._recursive:
 			print("Scanning recursively for clips")
 		else:
 			print("Scanning for clips")
-		video_files = glob.glob(f"{self.input_dir}/*.mp4", recursive=self.recursive)
+		video_files = glob.glob(f"{self._input_dir}/*.mp4", recursive=self._recursive)
 		for file in video_files:
-			self.cursor.execute(f"SELECT * FROM [dbo].[clips] WHERE path = '{file}'")
-			res = self.cursor.fetchall()
+			self._cursor.execute(f"SELECT * FROM [dbo].[clips] WHERE path = '{file}'")
+			res = self._cursor.fetchall()
 			if len(res) == 0:
 				print(f"New Clip Found: {file}")
 				print("Enter Clip Banner Text:")
 				banner = input("Enter your value: ")
-				self.cursor.execute(f"INSERT INTO [dbo].[clips] ([banner],[path],[used]) VALUES ('{banner}','{file}',0)")
-		self.cursor.commit()
+				self._cursor.execute(f"INSERT INTO [dbo].[clips] ([banner],[path],[used]) VALUES ('{banner}','{file}',0)")
+		self._cursor.commit()
 
-	def already_used(self, video_file):
-		return video_file in self.used_videos or video_file in self.created_videos
+	def get_montage_clips(self, montage_id):
+		None
 
-	def add_video(self, video_file):
-		if self.already_used(video_file):
-			return False
-		else:
-			self.created_videos.append(video_file)
-			return True
+	def get_clips(self, count=0, new_clips=False):
+		selector = "WHERE 1 = 1"
+		if new_clips:
+			selector = "WHERE used = 0"
+		self._cursor.execute(f"SELECT TOP {count} * FROM [dbo].[clips] {selector} ORDER BY NEWID()")
+		self._current_montage = self.cursor.fetchall()
+		print(self._current_montage)
