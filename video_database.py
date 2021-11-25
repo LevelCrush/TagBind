@@ -1,36 +1,63 @@
 """
-manages the video database configuration 
-TODO: migrate this over to mysql or sqlite for a better setup, currently it is using json which is inefficient for larger scopes, for now it gets the job done
+manages the video database configuration
 """
-import os 
-import os.path
 import json
 import pathlib
-from pprint import pprint
+import mysql.connector
+from mysql.connector import Error
 
-VIDEO_DATABASE_FILE = 'videodatabase.json'
+SQL_HOST = 'videodatabase.json'
+SQL_USER = ""
+SQL_PASSWORD = ""
 
 class VideoDatabase:
 
 	# constructor for the video database class, just initialize all variables
 	def __init__(self):
-		self.used_videos = [] # container that already knows about videos we created previously
-		self.created_videos = [] # container for any new videos we created this session
-		self.database = {} # initialize an empty database instance
+		self.connection = None
+		self.cursor = None
 
 	# connect to the "database" although ATM this is just connected to a JSON file
-	def connect(self): 
-		database_path = pathlib.Path(VIDEO_DATABASE_FILE)
-		if database_path.is_file(): # our file exists
-			with database_path.open() as database_pointer:
-				self.database = json.load(database_pointer)
-				self.used_videos = self.database['videos']
-			print('Database loaded')
-		else:
-			self.database = { 'videos' : [0] } 
-			with database_path.open(mode='w') as database_pointer:
-				json.dump(self.database, database_pointer)
-			print('Initialized Database')
+	def connect(self, create_db = True):
+		try:
+			self.connection = mysql.connector.connect(
+				host=SQL_HOST,
+				user=SQL_USER,
+				passwd=SQL_PASSWORD,
+				database="tagbind"
+			)
+			self.cursor = self.connection.cursor()
+			print("Connected to DB")
+			return True
+		except Error as e:
+			if (create_db):
+				return self.create_db()
+			else:
+				print(f"Failed to connect to DB: '{e}'")
+				return False
+
+	def create_db(self):
+		connection = None
+		try:
+			connection = mysql.connector.connect(
+				host=SQL_HOST,
+				user=SQL_USER,
+				passwd=SQL_PASSWORD
+			)
+			print("Connected to SQL, Creating tagbind DB")
+		except Error as e:
+			print(f"Failed to connect to SQL: '{e}'")
+			return False
+		try:
+			cursor = connection.cursor()
+			cursor.execute("CREATE DATABASE tagbind")
+			cursor.execute("USE [tagbind] GO SET ANSI_NULLS ON GO SET QUOTED_IDENTIFIER ON GO CREATE TABLE [dbo].[clips]([id] [int] IDENTITY(1,1) NOT NULL, [banner] [varchar](50) NULL, [path] [varchar](260) NOT NULL, [used] [bit] NOT NULL, PRIMARY KEY CLUSTERED ([id] ASC )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY] ) ON [PRIMARY] GO")
+			cursor.execute("USE [tagbind] GO SET ANSI_NULLS ON GO SET QUOTED_IDENTIFIER ON GO CREATE TABLE [dbo].[montages]([id] [int] IDENTITY(1,1) NOT NULL, [clip_count] [int] NOT NULL, [path] [varchar](260) NOT NULL, PRIMARY KEY CLUSTERED ([id] ASC)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]) ON [PRIMARY] GO")
+			cursor.execute("USE [tagbind] GO SET ANSI_NULLS ON GO SET QUOTED_IDENTIFIER ON GO CREATE TABLE [dbo].[montage_clips](	[montageId] [int] NOT NULL,	[clipId] [int] NOT NULL, CONSTRAINT [PK_montage_clips] PRIMARY KEY CLUSTERED ([montageId] ASC,[clipId] ASC )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]) ON [PRIMARY] GO ALTER TABLE [dbo].[montage_clips]  WITH CHECK ADD  CONSTRAINT [FK_montage_clips_clip] FOREIGN KEY([clipId]) REFERENCES [dbo].[clips] ([id]) GO ALTER TABLE [dbo].[montage_clips] CHECK CONSTRAINT [FK_montage_clips_clip] GO ALTER TABLE [dbo].[montage_clips]  WITH CHECK ADD  CONSTRAINT [FK_montage_clips_montages] FOREIGN KEY([montageId]) REFERENCES [dbo].[montages] ([id]) GO ALTER TABLE [dbo].[montage_clips] CHECK CONSTRAINT [FK_montage_clips_montages] GO")
+			return self.connect(False)
+		except Error as e:
+			print(f"Failed to Create DB: '{e}'")
+			return False
 
 	# determine if we have already used a vidoe file
 	def already_used(self, video_file):
