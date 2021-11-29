@@ -77,5 +77,13 @@ class VideoDatabase:
 		if new_clips:
 			selector = "WHERE used = 0"
 		self._cursor.execute(f"SELECT TOP {count} * FROM [dbo].[clips] {selector} ORDER BY NEWID()")
-		self._current_montage = self.cursor.fetchall()
+		self._current_montage = self._cursor.fetchall()
 		print(self._current_montage)
+		clips = []
+		for clipId, banner, file, used in self._current_montage:
+			clips.append((file, banner))
+		return clips
+
+
+	def save_montage(self):
+		return 0
