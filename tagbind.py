@@ -15,12 +15,11 @@ configs = Configuration()
 #output our input and output information
 print("Input Directory\t:\t{input}\nOutput File\t:\t{output}".format(input=configs.input, output=configs.output))
 
-
 # initialize our database
 database_connection = VideoDatabase(configs.input, configs.recurse)
 database_connection.connect()
 database_connection.scan_clips()
-clips = database_connection.get_clips(configs.clip_count)
+clips = database_connection.get_montage_clips(1)
 if len(clips) == 0:
 	print('No clips found...video cannot be produced')
 	sys.exit()
@@ -38,13 +37,7 @@ video_encoder.add_outro(OUTRO_YOUTUBE)
 #video_encoder.add_music("./Samples/song2.mp3")
 
 # create video
-video_encoder.create(configs.output)
-
-
-# ask if the video output was saved. ATM this doesnt do anything either
-ok_input = input('Did the video save? y/n > ')
-if len(ok_input) > 0 and ok_input.lower()[0] == 'y':
-	print('Success! Saving into database')
-	database_connection.save_montage()
+if video_encoder.create(configs.output):
+	print(f'Success! Saving into database, Montage ID: {database_connection.save_montage(configs.output)}')
 else:
-	print('Please check the log (DEV NOTE: THIS IS NOT IMPLEMENTED)')
+	print('Failed, Please check the log (DEV NOTE: THIS IS NOT IMPLEMENTED)')
