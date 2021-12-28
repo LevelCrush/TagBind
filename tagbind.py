@@ -4,7 +4,7 @@ Author: Gabriele M. Nunez ( https://github.com/GabrieleNunez )
 Description: Combines video files through ffmpeg  targeted toward the Level Crush channel 
 """
 import sys
-from video_database  import VideoDatabase
+from video_database import VideoDatabase
 from video_encoder import VideoEncoder
 from Config import Configuration
 
@@ -19,7 +19,7 @@ print("Input Directory\t:\t{input}\nOutput File\t:\t{output}".format(input=confi
 database_connection = VideoDatabase(configs.input, configs.recurse)
 database_connection.scan_clips()
 clips = database_connection.get_clips(configs.clip_count, configs.shuffle, not configs.repeat)
-
+#clips = database_connection.get_montage_clips(2)
 if len(clips) == 0:
 	print('No clips found...video cannot be produced')
 	sys.exit()

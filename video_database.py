@@ -3,7 +3,7 @@ manages the video database configuration
 """
 import sqlite3
 import glob
-import os
+
 
 class VideoDatabase:
 
@@ -50,8 +50,7 @@ class VideoDatabase:
 			res = cursor.fetchall()
 			if len(res) == 0:
 				print(f"New Clip Found: {file}")
-				print("Enter Clip Banner Text:")
-				banner = input("Enter your value: ")
+				banner = input("Enter Clip Banner Text: ")
 				cursor.execute(f"INSERT INTO clips (banner,path,used) VALUES ('{banner}','{file}',0)")
 
 		self._connection.commit()
