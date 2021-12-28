@@ -143,7 +143,7 @@ class VideoEncoder:
             print("Creation Failed!")
             return False
 
-        print("Checking output video")
+        print("Checking output...")
         output_length = self._get_clip_duration(output_path)
         if abs(self._total_duration - output_length) < 0.5:
             print(f"Video Created: {output_path}")

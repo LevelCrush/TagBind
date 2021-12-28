@@ -17,9 +17,9 @@ print("Input Directory\t:\t{input}\nOutput File\t:\t{output}".format(input=confi
 
 # initialize our database
 database_connection = VideoDatabase(configs.input, configs.recurse)
-database_connection.connect()
 database_connection.scan_clips()
-clips = database_connection.get_montage_clips(1)
+clips = database_connection.get_clips(configs.clip_count, configs.shuffle, not configs.repeat)
+
 if len(clips) == 0:
 	print('No clips found...video cannot be produced')
 	sys.exit()
@@ -41,3 +41,5 @@ if video_encoder.create(configs.output):
 	print(f'Success! Saving into database, Montage ID: {database_connection.save_montage(configs.output)}')
 else:
 	print('Failed, Please check the log (DEV NOTE: THIS IS NOT IMPLEMENTED)')
+
+database_connection.close()

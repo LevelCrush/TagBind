@@ -52,9 +52,9 @@ class VideoDatabase:
 				print(f"New Clip Found: {file}")
 				print("Enter Clip Banner Text:")
 				banner = input("Enter your value: ")
-				self._cursor.execute(f"INSERT INTO clips (banner,path,used) VALUES ('{banner}','{file}',0)")
+				cursor.execute(f"INSERT INTO clips (banner,path,used) VALUES ('{banner}','{file}',0)")
 
-		cursor.commit()
+		self._connection.commit()
 
 	def get_montage_clips(self, montage_id):
 		self._current_montage = []
@@ -68,7 +68,7 @@ class VideoDatabase:
 
 		return clips
 
-	def get_clips(self, count, randomize_clips, new_clips=False):
+	def get_clips(self, count, randomize_clips=True, new_clips=False):
 		selector = "WHERE 1 = 1"
 		if new_clips:
 			selector = "WHERE used = 0"
@@ -76,7 +76,7 @@ class VideoDatabase:
 		if randomize_clips:
 			cursor.execute(f"SELECT * FROM clips {selector} ORDER BY RANDOM() LIMIT {count}")
 		else:
-			cursor.execute(f"SELECT * FROM clips {selector} ORDER BY path DESC; LIMIT {count}")
+			cursor.execute(f"SELECT * FROM clips {selector} ORDER BY path DESC LIMIT {count}")
 		self._current_montage = cursor.fetchall()
 		self._current_montage_id = -1
 		print(self._current_montage)
@@ -86,14 +86,15 @@ class VideoDatabase:
 		return clips
 
 	def save_montage(self, output):
-		if self._current_montage_id != -1:
+		if self._current_montage_id == -1:
 			cursor = self._connection.cursor()
-			cursor.execute(f"INSERT INTO montages (clip_count,path) OUTPUT INSERTED.id VALUES ({len(self._current_montage)}, '{output}')")
+			cursor.execute(f"INSERT INTO montages (clip_count,path) VALUES ({len(self._current_montage)}, '{output}')")
+			cursor.execute("SELECT last_insert_rowid();")
 			self._current_montage_id = cursor.fetchall()[0][0]
 			clip_index = 0
 			for clip_id, name, path, used in self._current_montage:
 				cursor.execute(f"UPDATE clips SET used = 1 WHERE id = {clip_id}")
 				cursor.execute(f"INSERT INTO montage_clips (montageId,clipId,clipIndex) VALUES ({self._current_montage_id}, {clip_id}, {clip_index})")
 				clip_index += 1
-			cursor.commit()
+			self._connection.commit()
 		return self._current_montage_id
