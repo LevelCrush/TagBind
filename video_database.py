@@ -32,6 +32,7 @@ class VideoDatabase:
 		self._connection.execute('''CREATE TABLE IF NOT EXISTS montage_clips (
 										montageId INTEGER NOT NULL,
 										clipId INTEGER NOT NULL,
+										clipIndex INTEGER NOT NULL,
 										PRIMARY KEY (montageId, clipId),
 										FOREIGN KEY(montageId) REFERENCES montages(id),
 										FOREIGN KEY(clipId) REFERENCES clips(id))''')
@@ -62,18 +63,21 @@ class VideoDatabase:
 		cursor.execute(f"SELECT clipId, clipIndex FROM montage_clips WHERE montageId = {montage_id}")
 		clips = sorted(cursor.fetchall(), key=lambda x: x[1])
 		for (clipId, index) in clips:
-			cursor.execute(f"SELECT [path], [banner] FROM [dbo].[clips] WHERE id = {clipId}")
+			cursor.execute(f"SELECT path, banner FROM clips WHERE id = {clipId}")
 			clips[index] = cursor.fetchall()[0]
 
 		return clips
 
-	def get_clips(self, count=0, new_clips=False):
+	def get_clips(self, count, randomize_clips, new_clips=False):
 		selector = "WHERE 1 = 1"
 		if new_clips:
 			selector = "WHERE used = 0"
 		cursor = self._connection.cursor()
-		self._cursor.execute(f"SELECT TOP {count} * FROM [dbo].[clips] {selector} ORDER BY NEWID()")
-		self._current_montage = self._cursor.fetchall()
+		if randomize_clips:
+			cursor.execute(f"SELECT * FROM clips {selector} ORDER BY RANDOM() LIMIT {count}")
+		else:
+			cursor.execute(f"SELECT * FROM clips {selector} ORDER BY path DESC; LIMIT {count}")
+		self._current_montage = cursor.fetchall()
 		self._current_montage_id = -1
 		print(self._current_montage)
 		clips = []
@@ -83,12 +87,13 @@ class VideoDatabase:
 
 	def save_montage(self, output):
 		if self._current_montage_id != -1:
-			self._cursor.execute(f"INSERT INTO [dbo].[montages] ([clip_count] ,[path]) OUTPUT INSERTED.id VALUES ({len(self._current_montage)}, '{output}')")
-			self._current_montage_id = self._cursor.fetchall()[0][0]
-			clip_index = 0;
+			cursor = self._connection.cursor()
+			cursor.execute(f"INSERT INTO montages (clip_count,path) OUTPUT INSERTED.id VALUES ({len(self._current_montage)}, '{output}')")
+			self._current_montage_id = cursor.fetchall()[0][0]
+			clip_index = 0
 			for clip_id, name, path, used in self._current_montage:
-				self._cursor.execute(f"UPDATE [dbo].[clips] SET [used] = 1 WHERE id = {clip_id}")
-				self._cursor.execute(f"INSERT INTO [dbo].[montage_clips] ([montageId],[clipId],[clipIndex]) VALUES ({self._current_montage_id}, {clip_id}, {clip_index})")
+				cursor.execute(f"UPDATE clips SET used = 1 WHERE id = {clip_id}")
+				cursor.execute(f"INSERT INTO montage_clips (montageId,clipId,clipIndex) VALUES ({self._current_montage_id}, {clip_id}, {clip_index})")
 				clip_index += 1
-			self._cursor.commit()
+			cursor.commit()
 		return self._current_montage_id
