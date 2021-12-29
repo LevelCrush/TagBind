@@ -4,7 +4,7 @@ from subprocess import  check_output, CalledProcessError, STDOUT
 
 class VideoEncoder:
 
-    def __init__(self, width=1920, height=1080, frame_rate=30, banners=True, mute_clips=False, music_volume=0.35, transition_duration=1, vcodec="libx264", acodec="aac"):
+    def __init__(self, width=1920, height=1080, frame_rate=30, banners=True, font="Times New Roman", mute_clips=False, music_volume=0.35, transition_duration=1, vcodec="libx264", acodec="aac"):
         self._inputs = []
         self._filters = []
         self._input_count = 0
@@ -23,6 +23,7 @@ class VideoEncoder:
         self.transition_duration = transition_duration
         self.vcodec = vcodec
         self.acodec = acodec
+        self.font = font
 
     def _add_wipe(self, transition_angle=1):
         # Must add a clip before calling this or it will fail
@@ -50,7 +51,7 @@ class VideoEncoder:
         base_video = f"video{self._last_video}"
         self._last_video += 1
         output_video = f"video{self._last_video}"
-        text_filter = "[{input}]drawtext=fontsize=(h/16):font='Times New Roman':text=\'{text}\':fontcolor=white:box=1:boxcolor=DarkCyan:boxborderw=20:x=if(gt(t\,{end})\,w-text_w-150+((t-{end}) * {ospeed})\,if(gt(w-((t-{start})*{ispeed})\,w-text_w-150)\,w-((t-{start})*{ispeed})\,w-text_w-150)):y=h-text_h-150:enable='between(t,{start},{end} + 3)'[{output}];".format(
+        text_filter = "[{input}]drawtext=fontsize=(h/16):font='{font_name}':text=\'{text}\':fontcolor=white:box=1:boxcolor=DarkCyan:boxborderw=20:x=if(gt(t\,{end})\,w-text_w-150+((t-{end}) * {ospeed})\,if(gt(w-((t-{start})*{ispeed})\,w-text_w-150)\,w-((t-{start})*{ispeed})\,w-text_w-150)):y=h-text_h-150:enable='between(t,{start},{end} + 3)'[{output}];".format(
             text=text,
             input=base_video,
             output=output_video,
@@ -59,7 +60,8 @@ class VideoEncoder:
             ispeed=in_speed,
             ospeed=out_speed,
             width=self.width,
-            height=self.height
+            height=self.height,
+            font_name=self.font
         )
         self._filters.append(text_filter)
 
@@ -136,7 +138,7 @@ class VideoEncoder:
             vcodec=self.vcodec,
             acodec=self.acodec
         )
-        print(cmd)
+
         print("Creating Video...")
         try:
             ffmpeg_output = check_output(cmd, stderr=STDOUT).decode()
@@ -148,7 +150,7 @@ class VideoEncoder:
         print("Checking output...")
         output_length = self._get_clip_duration(output_path)
         if abs(self._total_duration - output_length) < 0.5:
-            print(f"Video Created: {output_path}")
+            print(f"Video Created: {output_path}, Duration: {self._total_duration}s")
             return True
         else:
             print(f"Expected Duration: {self._total_duration}s")
