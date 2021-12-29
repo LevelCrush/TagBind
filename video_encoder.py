@@ -24,15 +24,16 @@ class VideoEncoder:
         self.vcodec = vcodec
         self.acodec = acodec
 
-    def _add_wipe(self, video_index, transition_angle=1):
+    def _add_wipe(self, transition_angle=1):
         # Must add a clip before calling this or it will fail
-        base_video = f"video{self._last_video}"
+        base_video = f"video{self._last_video - 1}"
+        input_video = f"video{self._last_video}"
         self._last_video += 1
         intermediate_video = f"video{self._last_video}"
         self._last_video += 1
         output_video = f"video{self._last_video}"
-        wipe_filter = "[{index}]scale={width}:{height}[input{index}];[input{index}]format=yuva444p,geq=lum='p(X,Y)':a='st(1,(1+W/H/{angle})*H/{duration});if(lt(W-X,((ld(1)*T-Y)/(ld(1)*T))*ld(1)*T*{angle}),p(X,Y),0)':enable='lte(t,{duration})',setpts=PTS+{duration}+{offset}/TB[{intermediate}];[{base_video}][{intermediate}]overlay[{output}];".format(
-            index=video_index,
+        wipe_filter = "[{input}]format=yuva444p,geq=lum='p(X,Y)':a='st(1,(1+W/H/{angle})*H/{duration});if(lt(W-X,((ld(1)*T-Y)/(ld(1)*T))*ld(1)*T*{angle}),p(X,Y),0)':enable='lte(t,{duration})',setpts=PTS+{duration}+{offset}/TB[{intermediate}];[{base_video}][{intermediate}]overlay[{output}];".format(
+            input=input_video,
             duration=self.transition_duration,
             angle=transition_angle,
             offset=self._total_duration,
@@ -44,19 +45,21 @@ class VideoEncoder:
         )
         self._filters.append(wipe_filter)
 
-    def add_text(self, text, duration=3, delay=1, in_speed=300, out_speed=500):
+    def add_text(self, text, duration=3, delay=0.75, in_speed=400, out_speed=600):
         # Must add a clip before calling this or it will fail
         base_video = f"video{self._last_video}"
         self._last_video += 1
         output_video = f"video{self._last_video}"
-        text_filter = "[{input}]drawtext=fontsize=(h/16):fontfile=./font.ttf:text=\'{text}\':fontcolor=white:box=1:boxcolor=DarkCyan:boxborderw=20:x=if(gt(t\,{end})\,w-text_w-150+((t-{end}) * {ospeed})\,if(gt(w-((t-{start})*{ispeed})\,w-text_w-150)\,w-((t-{start})*{ispeed})\,w-text_w-150)):y=h-text_h-150:enable='between(t,{start},{end} + 3)'[{output}];".format(
+        text_filter = "[{input}]drawtext=fontsize=(h/16):font='Times New Roman':text=\'{text}\':fontcolor=white:box=1:boxcolor=DarkCyan:boxborderw=20:x=if(gt(t\,{end})\,w-text_w-150+((t-{end}) * {ospeed})\,if(gt(w-((t-{start})*{ispeed})\,w-text_w-150)\,w-((t-{start})*{ispeed})\,w-text_w-150)):y=h-text_h-150:enable='between(t,{start},{end} + 3)'[{output}];".format(
             text=text,
             input=base_video,
             output=output_video,
             start=self._total_duration + delay,
             end=self._total_duration + delay + duration,
             ispeed=in_speed,
-            ospeed=out_speed
+            ospeed=out_speed,
+            width=self.width,
+            height=self.height
         )
         self._filters.append(text_filter)
 
@@ -66,18 +69,17 @@ class VideoEncoder:
 
     def add_clip(self, video_path, banner=""):
         self._inputs.append(video_path)
+        self._last_video += 1
+        output_video = f"video{self._last_video}"
+        scale_filter = "[{input}]scale=iw*min({width}/iw\,{height}/ih):ih*min({width}/iw\,{height}/ih),scale=w=iw*sar:h=ih,setsar=sar=1/1[{out}];".format(
+            out=output_video,
+            input=self._input_count,
+            width=self.width,
+            height=self.height
+        )
+        self._filters.append(scale_filter)
         if self._input_count != 0:
-            self._add_wipe(self._input_count)
-        else:
-            self._last_video += 1
-            output_video = f"video{self._last_video}"
-            scale_filter = "[{input}]scale={width}:{height}[{out}];".format(
-                out=output_video,
-                input=self._input_count,
-                width=self.width,
-                height=self.height
-            )
-            self._filters.append(scale_filter)
+            self._add_wipe()
         if banner != "" and self.enable_banners:
             self.add_text(banner)
         self._total_duration += self._get_clip_duration(video_path)
@@ -134,7 +136,7 @@ class VideoEncoder:
             vcodec=self.vcodec,
             acodec=self.acodec
         )
-
+        print(cmd)
         print("Creating Video...")
         try:
             ffmpeg_output = check_output(cmd, stderr=STDOUT).decode()

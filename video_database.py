@@ -78,7 +78,6 @@ class VideoDatabase:
 			cursor.execute(f"SELECT * FROM clips {selector} ORDER BY path DESC LIMIT {count}")
 		self._current_montage = cursor.fetchall()
 		self._current_montage_id = -1
-		print(self._current_montage)
 		clips = []
 		for clipId, banner, file, used in self._current_montage:
 			clips.append((file, banner))

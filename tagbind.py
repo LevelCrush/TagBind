@@ -28,7 +28,7 @@ if len(clips) == 0:
 video_encoder = VideoEncoder(configs.width, configs.height, configs.fps, configs.banners, configs.mute_clips,configs.volume,configs.transition_duration,configs.vcodec,configs.acodec)
 
 for file, banner in clips:
-	print("Using\t: {tag}, {name}".format(tag=file, name=banner))
+	print("Using:\t{tag},\t{name}".format(tag=file, name=banner))
 	video_encoder.add_clip(file, banner)
 
 # append our outro 
