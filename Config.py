@@ -51,6 +51,7 @@ class Configuration:
         self.volume = float(command_line_arguments.volume)
         self.mute_clips = command_line_arguments.mute_clips
         self.banners = command_line_arguments.banners
+        self.font = command_line_arguments.font_family
 
 
 
@@ -62,7 +63,7 @@ class Configuration:
 
 
     def pull_from_configs(self, targeted_platform):
-        print("this ran")
+        print(targeted_platform)
         with open('configurations.json') as f:
             data = json.load(f)
 
@@ -71,12 +72,17 @@ class Configuration:
 
         for i in data:
 
-            if i["name"] == targeted_platform:
-                self.width = i["width"]
-                self.height = i["height"]
-                self.fps = i["fps"]
-                self.vcodec = i["vcodec"]
-                self.acodec = i["acodec"]
+            if i == targeted_platform:
+                self.width = i[1]
+                self.height = i[2]
+                self.fps = i[3]
+                self.vcodec = i[4]
+                self.acodec = i[5]
+                self.font = i[6]
+                self.mute_clips = i[7]
+                self.volume = i[8]
+                self.banners = i[9]
+                self.transition_duration = i[10]    
 
 
 

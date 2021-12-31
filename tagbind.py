@@ -25,7 +25,7 @@ if len(clips) == 0:
 	sys.exit()
 
 # prepare our video encoder
-video_encoder = VideoEncoder(configs.width, configs.height, configs.fps, configs.banners, "Times New Roman", configs.mute_clips,configs.volume,configs.transition_duration,configs.vcodec,configs.acodec)
+video_encoder = VideoEncoder(configs.width, configs.height, configs.fps, configs.banners, configs.font, configs.mute_clips,configs.volume,configs.transition_duration,configs.vcodec,configs.acodec)
 
 for file, banner in clips:
 	print("Using:\t{tag},\t{name}".format(tag=file, name=banner))

@@ -1,28 +1,73 @@
 {
 
-   "youtube": {
-      "name": "youtube",
-      "width": 1280,
-      "height": 720,
-       "fps": 60,
-      "vcodec": "libx264",
-      "acodec": "aac",
-      "clip_count": 3
+  "youtube": {
+    "name": "youtube",
+    "width": 1280,
+    "height": 720,
+    "fps": 60,
+    "vcodec": "libx264",
+    "acodec": "aac",
+    "clip_count": 3,
+    "font": "Times New Roman",
+    "mute_clips": false,
+    "music_volume": 0.35,
+    "banners": true,
+    "transition_duration": 1
 
 
 
+  },
+  "tictoc": {
+    "name": "tictoc",
+    "width": 100,
+    "height": 1280,
+    "fps": 60,
+    "vcodec": "libx264",
+    "acodec": "acc",
+    "clip_count": 3,
+    "font": "Times New Roman",
+    "mute_clips": false,
+    "music_volume": 0.35,
+    "banners": true,
+    "transition_duration": 1
 
-    },
-    "tictoc": {
-      "name": "tictoc",
-      "width": 100,
-      "height": 1280,
+
+
+  },
+
+  "twitter": {
+    "name": "twitter",
+    "width": 1080,
+    "height": 1920,
+    "fps": 60,
+    "vcodec": "libx264",
+    "acodec": "acc",
+    "clip_count": 3,
+    "font": "Times New Roman",
+    "mute_clips": false,
+    "music_volume": 0.35,
+    "banners": true,
+    "transition_duration": 1
+
+
+
+  },
+    "instagram": {
+      "name": "instagram",
+      "width": 1080,
+      "height": 1080,
       "fps": 60,
-       "vcodec": "libx264",
-       "acodec": "acc",
-       "clip_count":3
+      "vcodec": "libx264",
+      "acodec": "acc",
+      "clip_count": 3,
+      "font": "Times New Roman",
+      "mute_clips": false,
+      "music_volume": 0.35,
+      "banners": true,
+      "transition_duration": 1
+      
 
-       
+
 
     }
 
