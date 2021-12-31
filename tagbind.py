@@ -8,7 +8,7 @@ from video_database import VideoDatabase
 from video_encoder import VideoEncoder
 from Config import Configuration
 
-OUTRO_YOUTUBE = './outros/YouTube_Outro.mp4'
+
 
 configs = Configuration()
 
@@ -25,14 +25,14 @@ if len(clips) == 0:
 	sys.exit()
 
 # prepare our video encoder
-video_encoder = VideoEncoder(configs.width, configs.height, configs.fps, configs.banners, configs.font, configs.mute_clips,configs.volume,configs.transition_duration,configs.vcodec,configs.acodec)
+video_encoder = VideoEncoder(configs.width, configs.height, configs.fps, configs.banners, configs.font, configs.mute_clips,configs.music_volume,configs.transition_duration,configs.vcodec,configs.acodec)
 
 for file, banner in clips:
 	print("Using:\t{tag},\t{name}".format(tag=file, name=banner))
 	video_encoder.add_clip(file, banner)
 
 # append our outro 
-video_encoder.add_outro(OUTRO_YOUTUBE)
+video_encoder.add_outro(configs.outro)
 #video_encoder.add_music("./Samples/song1.mp3")
 #video_encoder.add_music("./Samples/song2.mp3")
 
