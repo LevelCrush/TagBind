@@ -1,6 +1,6 @@
 """
 Program Name: Tag Bind
-Author: Gabriele M. Nunez ( https://github.com/GabrieleNunez )
+Author: Gabriele M. Nunez ( https://github.com/GabrieleNunez ), Austin Harms (https://github.com/austinharms)
 Description: Combines video files through ffmpeg  targeted toward the Level Crush channel 
 """
 import sys
