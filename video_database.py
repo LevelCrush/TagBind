@@ -40,9 +40,9 @@ class VideoDatabase:
 
 	def scan_clips(self):
 		if self._recursive:
-			print("Scanning recursively for clips")
+			print("Scanning recursively for new clips")
 		else:
-			print("Scanning for clips")
+			print("Scanning for new clips")
 		video_files = glob.glob(f"{self._input_dir}/*.mp4", recursive=self._recursive)
 		cursor = self._connection.cursor()
 		for file in video_files:

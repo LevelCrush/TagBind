@@ -1,59 +1,6 @@
 {
-
-  "youtube": {
-    "width": 1280,
-    "height": 720,
-    "fps": 60,
-    "vcodec": "libx264",
-    "acodec": "aac",
-    "clip_count": 3,
-    "font": "Times New Roman",
-    "mute_clips": false,
-    "music_volume": 0.35,
-    "banners": true,
-    "transition_duration": 1
-  },
-
-  "tiktok": {
-    "width": 1080,
-    "height": 1920,
-    "fps": 60,
-    "vcodec": "libx264",
-    "acodec": "acc",
-    "clip_count": 3,
-    "font": "Times New Roman",
-    "mute_clips": false,
-    "music_volume": 0.35,
-    "banners": true,
-    "transition_duration": 1
-  },
-
-  "twitter": {
-    "width": 1080,
-    "height": 1920,
-    "fps": 60,
-    "vcodec": "libx264",
-    "acodec": "acc",
-    "clip_count": 3,
-    "font": "Times New Roman",
-    "mute_clips": false,
-    "music_volume": 0.35,
-    "banners": true,
-    "transition_duration": 1
-  },
-
-    "instagram": {
-      "width": 1080,
-      "height": 1080,
-      "fps": 60,
-      "vcodec": "libx264",
-      "acodec": "acc",
-      "clip_count": 3,
-      "font": "Times New Roman",
-      "mute_clips": false,
-      "music_volume": 0.35,
-      "banners": true,
-      "transition_duration": 1
-    }
-
+  "youtube": "-width 1280 -height 720 -fps 60 -vcodec libx264 -acodec aac -outro \"./outros/YouTube_Outro.mp4\"",
+  "tiktok": "-width 1080 -height 1920 -fps 60 -vcodec libx264 -acodec aac",
+  "twitter": "-width 1080 -height 1920 -fps 60 -vcodec libx264 -acodec aac",
+  "instagram": "-width 1080 -height 1080 -fps 60 -vcodec libx264 -acodec aac"
 }

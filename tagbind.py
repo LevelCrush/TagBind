@@ -8,38 +8,58 @@ from video_database import VideoDatabase
 from video_encoder import VideoEncoder
 from Config import Configuration
 
-
-
+# Load configs and args
 configs = Configuration()
-
-#output our input and output information
 print("Input Directory\t:\t{input}\nOutput File\t:\t{output}".format(input=configs.input, output=configs.output))
 
 # initialize our database
 database_connection = VideoDatabase(configs.input, configs.recurse)
 database_connection.scan_clips()
-clips = database_connection.get_clips(configs.clip_count, configs.shuffle, not configs.repeat)
-#clips = database_connection.get_montage_clips(2)
-if len(clips) == 0:
-	print('No clips found...video cannot be produced')
-	sys.exit()
 
-# prepare our video encoder
-video_encoder = VideoEncoder(configs.width, configs.height, configs.fps, configs.banners, configs.font, configs.mute_clips,configs.music_volume,configs.transition_duration,configs.vcodec,configs.acodec)
-
-for file, banner in clips:
-	print("Using:\t{tag},\t{name}".format(tag=file, name=banner))
-	video_encoder.add_clip(file, banner)
-
-# append our outro 
-video_encoder.add_outro(configs.outro)
-#video_encoder.add_music("./Samples/song1.mp3")
-#video_encoder.add_music("./Samples/song2.mp3")
-
-# create video
-if video_encoder.create(configs.output):
-	print(f'Success! Saving into database, Montage ID: {database_connection.save_montage(configs.output)}')
+# Load clips from db
+if configs.montage_id != -1:
+    clips = database_connection.get_montage_clips(configs.montage_id)
 else:
-	print('Failed, Please check the log (DEV NOTE: THIS IS NOT IMPLEMENTED)')
+    clips = database_connection.get_clips(configs.clip_count, configs.shuffle, not configs.repeat)
 
+if len(clips) == 0:
+    print('No clips found...video cannot be produced')
+    database_connection.close()
+    sys.exit()
+
+# Create video encoder with configs
+video_encoder = VideoEncoder(configs.width,
+                             configs.height,
+                             configs.fps,
+                             not configs.disabled_banners,
+                             configs.font,
+                             configs.mute_clips,
+                             configs.music_volume,
+                             configs.transition_time,
+                             configs.vcodec,
+                             configs.acodec)
+
+# Log and load clips into video encoder
+for file, banner in clips:
+    print("Using:\t{tag},\t{name}".format(tag=file, name=banner))
+    video_encoder.add_clip(file, banner)
+
+# Add outro if any
+if configs.outro != "":
+    print("Add Outro: " + configs.outro)
+    video_encoder.add_outro(configs.outro)
+
+# video_encoder.add_music("./Samples/song1.mp3")
+# video_encoder.add_music("./Samples/song2.mp3")
+
+# Create the video
+if video_encoder.create(configs.output):
+    if not configs.no_database_save:
+        print(f'Success! Saving into database, Montage ID: {database_connection.save_montage(configs.output)}')
+    else:
+        print('Success!')
+else:
+    print('Failed')
+
+# Save any changes to the db
 database_connection.close()
