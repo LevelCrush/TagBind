@@ -24,6 +24,7 @@ class Configuration:
         self.repeat = False
         self.no_database_save = False
         self.disabled_banners = False
+        self.ignore_db = False
         self.montage_id = -1
 
         # check for preset
@@ -82,6 +83,8 @@ class Configuration:
             self.disabled_banners = args.no_banners
         if hasattr(args, "montage"):
             self.montage_id = int(args.montage)
+        if hasattr(args, "ignore_database"):
+            self.ignore_db = args.ignore_database
 
     def _parse_args(self, input, require_io=True):
         parser = argparse.ArgumentParser()
@@ -107,6 +110,7 @@ class Configuration:
         parser.add_argument('--no_database_save', action="store_true", help='Do not save montages in the database', default=argparse.SUPPRESS)
         parser.add_argument('--no_banners', action="store_true", help='Disabled banner text', default=argparse.SUPPRESS)
         parser.add_argument('-montage', help='Recreate montage by id, Overrides count, shuffle and allow_repeat arguments', default=argparse.SUPPRESS)
+        parser.add_argument('--ignore_database', action="store_true", help='Don\'t use clips stored in the database', default=argparse.SUPPRESS)
         self._copy_args(parser.parse_args(input))
 
     def _parse_preset(self):

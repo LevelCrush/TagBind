@@ -13,7 +13,7 @@ configs = Configuration()
 print("Input Directory\t:\t{input}\nOutput File\t:\t{output}".format(input=configs.input, output=configs.output))
 
 # initialize our database
-database_connection = VideoDatabase(configs.input, configs.recurse)
+database_connection = VideoDatabase(configs.input, configs.recurse, configs.ignore_db)
 database_connection.scan_clips()
 
 # Load clips from db

@@ -8,8 +8,12 @@ import glob
 class VideoDatabase:
 
 	# constructor for the video database class, just initialize all variables
-	def __init__(self, input_dir, recursive=False):
-		self._connection = sqlite3.connect('tag.db')
+	def __init__(self, input_dir, recursive=False, use_memory_db=False):
+		if use_memory_db:
+			self._connection = sqlite3.connect(":memory:")
+		else:
+			self._connection = sqlite3.connect('tag.db')
+			print("Loaded Clip Database")
 		self._create_db()
 		self._input_dir = input_dir
 		self._recursive = recursive
