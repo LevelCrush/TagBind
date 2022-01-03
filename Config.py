@@ -38,7 +38,6 @@ class Configuration:
         args = sys.argv
         del args[0]
         self._parse_args(args)
-        print(self.__dict__)
 
     def _copy_args(self, args):
         if hasattr(args, "input_directory"):
