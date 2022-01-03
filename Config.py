@@ -15,6 +15,7 @@ class Configuration:
         self.vcodec = "libx264"
         self.acodec = "aac"
         self.transition_time = 1
+        self.music = []
         self.music_volume = 0.35
         self.font = "Times New Roman"
         self.mute_clips = False
@@ -62,6 +63,8 @@ class Configuration:
             self.acodec = args.acodec
         if hasattr(args, "transition_time"):
             self.transition_time = float(args.transition_time)
+        if hasattr(args, "music"):
+            self.music = args.music.split(", ")
         if hasattr(args, "music_volume"):
             self.music_volume = float(args.music_volume)
         if hasattr(args, "banner_font"):
@@ -95,6 +98,7 @@ class Configuration:
         parser.add_argument('-vcodec', help='The video codec that is used to encode the output', default=argparse.SUPPRESS)
         parser.add_argument('-acodec', help='The audio codec that is used to encode the output', default=argparse.SUPPRESS)
         parser.add_argument('-transition_time', help='the duration of transitions between clips, minimum is 1', default=argparse.SUPPRESS)
+        parser.add_argument('-music', help='Add music overlay, provide mp3 paths separated by comma with space', default=argparse.SUPPRESS)
         parser.add_argument('-music_volume', help='Volume for music overlay', default=argparse.SUPPRESS)
         parser.add_argument('-banner_font', help='The font used for banners', default=argparse.SUPPRESS)
         parser.add_argument('--mute_clips', action="store_true", help='Mute clip audio', default=argparse.SUPPRESS)

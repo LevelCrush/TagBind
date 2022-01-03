@@ -49,8 +49,10 @@ if configs.outro != "":
     print("Add Outro: " + configs.outro)
     video_encoder.add_outro(configs.outro)
 
-# video_encoder.add_music("./Samples/song1.mp3")
-# video_encoder.add_music("./Samples/song2.mp3")
+if len(configs.music) > 0:
+    for song in configs.music:
+        video_encoder.add_music(song)
+        print("Add Song: " + song)
 
 # Create the video
 if video_encoder.create(configs.output):
