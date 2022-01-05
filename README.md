@@ -81,3 +81,4 @@ output_file What this does: The final file destination that we want to render to
  - Gabriele M. Nunez
  - Austin Harms
  - Alexander Hackbart
+ - Caelan Dubois
